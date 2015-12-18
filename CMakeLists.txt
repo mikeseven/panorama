@@ -8,6 +8,8 @@ endif()
 
 project (stitch)
 
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
+
 # Detect the OS
 if(${CMAKE_HOST_WIN32})
   set(WINDOWS 1)
@@ -30,6 +32,7 @@ if (MSVC)
   endif()
   set(OBJ_EXT obj)
 else()
+
   include(CheckCXXCompilerFlag)
   CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
   CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
@@ -46,6 +49,7 @@ endif()
 #################################################################################################################
 # ============================================ General build definitions ====================================== #
 #################################################################################################################
+find_package(Eigen3)
 if(NOT EIGEN3_INCLUDE_DIR )
     message(FATAL_ERROR "Set EIGEN3_INCLUDE_DIR")
 endif()
@@ -57,9 +61,11 @@ if(MSVC)
 
   # /Zo makes debug symbol in pdb in release mode in VS2015
   add_definitions(/fp:fast /GR- /Os /Zo /arch:AVX /openmp)
-else() 
-  add_definitions(-O3 -g -msse3 -mavx -fopenmp -Wall -Wextra)
-  set(CMAKE_CXX_COMPILER g++-5)
+else()
+  add_definitions(-O3 -g -msse3 -mavx -Wall -Wextra)
+  if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    add_definitions(-fopenmp)
+  endif()
 endif()
 
 add_subdirectory(src)
